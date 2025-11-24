@@ -135,7 +135,7 @@ def create_estudiante():
         return jsonify({"error": str(e)}), 500
 
 # PUT - Actualizar estudiante
-@app.route('/estudiante/<int:estudiante_id>', methods=['PUT'])
+@app.route('/estudiantes/<int:estudiante_id>', methods=['PUT'])
 def update_estudiante(estudiante_id):
     try:
         data = request.get_json()
@@ -171,6 +171,199 @@ def delete_estudiante(estudiante_id):
         
         if response.status_code == 204:
             return jsonify({"message": "Estudiante eliminado exitosamente"})
+        else:
+            return jsonify({"error": response.text}), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ENDPOINTS CRUD PARA CURSOS
+
+# GET - Obtener todos los cursos
+@app.route('/cursos', methods=['GET'])
+def get_cursos():
+    try:
+        url = f"{supabase_url}/rest/v1/cursos?select=*"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({"error": response.text}), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# GET - Obtener curso por ID
+@app.route('/cursos/<int:curso_id>', methods=['GET'])
+def get_curso(curso_id):
+    try:
+        url = f"{supabase_url}/rest/v1/cursos?id=eq.{curso_id}&select=*"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data:
+                return jsonify(data[0])
+            else:
+                return jsonify({"error": "Curso no encontrado"}), 404
+        else:
+            return jsonify({"error": response.text}), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# POST - Crear nuevo curso
+@app.route('/cursos', methods=['POST'])
+def create_curso():
+    try:
+        data = request.get_json()
+        if not data or 'nombre' not in data:
+            return jsonify({"error": "Se requiere el nombre del curso"}), 400
+            
+        url = f"{supabase_url}/rest/v1/cursos"
+        post_data = {
+            "nombre": data['nombre'],
+            "descripcion": data.get('descripcion', ''),
+            "creditos": data.get('creditos', 3)
+        }
+        
+        response = requests.post(url, headers=headers, json=post_data)
+        
+        if response.status_code == 201:
+            try:
+                response_data = response.json() if response.text else {"id": "nuevo"}
+                return jsonify({
+                    "message": "Curso creado exitosamente", 
+                    "data": response_data
+                }), 201
+            except:
+                return jsonify({
+                    "message": "Curso creado exitosamente", 
+                    "data": {"id": "nuevo"}
+                }), 201
+        else:
+            return jsonify({"error": response.text}), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# PUT - Actualizar curso
+@app.route('/cursos/<int:curso_id>', methods=['PUT'])
+def update_curso(curso_id):
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No hay datos para actualizar"}), 400
+            
+        url = f"{supabase_url}/rest/v1/cursos?id=eq.{curso_id}"
+        
+        update_data = {}
+        if 'nombre' in data:
+            update_data['nombre'] = data['nombre']
+        if 'descripcion' in data:
+            update_data['descripcion'] = data['descripcion']
+        if 'creditos' in data:
+            update_data['creditos'] = data['creditos']
+            
+        if not update_data:
+            return jsonify({"error": "No hay datos válidos para actualizar"}), 400
+        
+        response = requests.patch(url, headers=headers, json=update_data)
+        
+        if response.status_code == 204:
+            return jsonify({"message": "Curso actualizado exitosamente"})
+        else:
+            return jsonify({"error": response.text}), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# DELETE - Eliminar curso
+@app.route('/cursos/<int:curso_id>', methods=['DELETE'])
+def delete_curso(curso_id):
+    try:
+        url = f"{supabase_url}/rest/v1/cursos?id=eq.{curso_id}"
+        response = requests.delete(url, headers=headers)
+        
+        if response.status_code == 204:
+            return jsonify({"message": "Curso eliminado exitosamente"})
+        else:
+            return jsonify({"error": response.text}), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ENDPOINTS CRUD PARA INSCRIPCIONES
+
+# GET - Obtener todas las inscripciones
+@app.route('/inscripciones', methods=['GET'])
+def get_inscripciones():
+    try:
+        url = f"{supabase_url}/rest/v1/inscripciones?select=*"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({"error": response.text}), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# GET - Obtener inscripción por ID
+@app.route('/inscripciones/<int:inscripcion_id>', methods=['GET'])
+def get_inscripcion(inscripcion_id):
+    try:
+        url = f"{supabase_url}/rest/v1/inscripciones?id=eq.{inscripcion_id}&select=*"
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data:
+                return jsonify(data[0])
+            else:
+                return jsonify({"error": "Inscripción no encontrada"}), 404
+        else:
+            return jsonify({"error": response.text}), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# POST - Crear nueva inscripción
+@app.route('/inscripciones', methods=['POST'])
+def create_inscripcion():
+    try:
+        data = request.get_json()
+        if not data or 'estudiante_id' not in data or 'curso_id' not in data:
+            return jsonify({"error": "Se requieren estudiante_id y curso_id"}), 400
+            
+        url = f"{supabase_url}/rest/v1/inscripciones"
+        post_data = {
+            "estudiante_id": data['estudiante_id'],
+            "curso_id": data['curso_id']
+        }
+        
+        response = requests.post(url, headers=headers, json=post_data)
+        
+        if response.status_code == 201:
+            try:
+                response_data = response.json() if response.text else {"id": "nuevo"}
+                return jsonify({
+                    "message": "Inscripción creada exitosamente", 
+                    "data": response_data
+                }), 201
+            except:
+                return jsonify({
+                    "message": "Inscripción creada exitosamente", 
+                    "data": {"id": "nuevo"}
+                }), 201
+        else:
+            return jsonify({"error": response.text}), response.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# DELETE - Eliminar inscripción
+@app.route('/inscripciones/<int:inscripcion_id>', methods=['DELETE'])
+def delete_inscripcion(inscripcion_id):
+    try:
+        url = f"{supabase_url}/rest/v1/inscripciones?id=eq.{inscripcion_id}"
+        response = requests.delete(url, headers=headers)
+        
+        if response.status_code == 204:
+            return jsonify({"message": "Inscripción eliminada exitosamente"})
         else:
             return jsonify({"error": response.text}), response.status_code
     except Exception as e:
