@@ -135,7 +135,7 @@ def create_estudiante():
         return jsonify({"error": str(e)}), 500
 
 # PUT - Actualizar estudiante
-@app.route('/estudiantes/<int:estudiante_id>', methods=['PUT'])
+@app.route('/estudiante/<int:estudiante_id>', methods=['PUT'])
 def update_estudiante(estudiante_id):
     try:
         data = request.get_json()
@@ -170,7 +170,7 @@ def delete_estudiante(estudiante_id):
         response = requests.delete(url, headers=headers)
         
         if response.status_code == 204:
-            return jsonify({"message": "Estudiante eliminado exitosamente")
+            return jsonify({"message": "Estudiante eliminado exitosamente"})
         else:
             return jsonify({"error": response.text}), response.status_code
     except Exception as e:
