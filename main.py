@@ -170,11 +170,12 @@ def delete_estudiante(estudiante_id):
         response = requests.delete(url, headers=headers)
         
         if response.status_code == 204:
-            return jsonify({"message": "Estudiante eliminado exitosamente"})
+            return jsonify({"message": "Estudiante eliminado exitosamente")
         else:
             return jsonify({"error": response.text}), response.status_code
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port)
