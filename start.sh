@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python main.py
+gunicorn "main:app" --bind 0.0.0.0:$PORT
