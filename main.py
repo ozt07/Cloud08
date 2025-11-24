@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configurar Supabase
+# Configurar Supabase usando REST API directa
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_KEY")
 
@@ -90,15 +90,7 @@ def create_estudiante(estudiante: EstudianteCreate):
             "email": estudiante.email
         }
         
-        print(f"🔍 DEBUG POST:")
-        print(f"URL: {url}")
-        print(f"Headers: {headers}")
-        print(f"Data: {data}")
-        
         response = requests.post(url, headers=headers, json=data)
-        
-        print(f"Status Code: {response.status_code}")
-        print(f"Response Text: {response.text}")
         
         if response.status_code == 201:
             try:
@@ -109,8 +101,7 @@ def create_estudiante(estudiante: EstudianteCreate):
         else:
             raise HTTPException(status_code=response.status_code, detail=response.text)
     except Exception as e:
-        print(f"❌ EXCEPTION: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error completo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 # PUT - Actualizar estudiante
 @app.put("/estudiantes/{estudiante_id}")
@@ -128,46 +119,30 @@ def update_estudiante(estudiante_id: int, estudiante: EstudianteUpdate):
         if not update_data:
             raise HTTPException(status_code=400, detail="No hay datos para actualizar")
         
-        print(f"🔍 DEBUG PUT:")
-        print(f"URL: {url}")
-        print(f"Update Data: {update_data}")
-        
         response = requests.patch(url, headers=headers, json=update_data)
-        
-        print(f"Status Code: {response.status_code}")
-        print(f"Response Text: {response.text}")
         
         if response.status_code == 204:
             return {"message": "Estudiante actualizado exitosamente"}
         else:
             raise HTTPException(status_code=response.status_code, detail=response.text)
     except Exception as e:
-        print(f"❌ EXCEPTION: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error completo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 # DELETE - Eliminar estudiante
 @app.delete("/estudiantes/{estudiante_id}")
 def delete_estudiante(estudiante_id: int):
     try:
         url = f"{supabase_url}/rest/v1/estudiantes?id=eq.{estudiante_id}"
-        
-        print(f"🔍 DEBUG DELETE:")
-        print(f"URL: {url}")
-        
         response = requests.delete(url, headers=headers)
-        
-        print(f"Status Code: {response.status_code}")
-        print(f"Response Text: {response.text}")
         
         if response.status_code == 204:
             return {"message": "Estudiante eliminado exitosamente"}
         else:
             raise HTTPException(status_code=response.status_code, detail=response.text)
     except Exception as e:
-        print(f"❌ EXCEPTION: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error completo: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
-# Endpoints básicos (mantener los existentes)
+# Endpoints básicos
 @app.get("/")
 def read_root():
     return {"message": "API de Estudiantes y Cursos funcionando!", "version": "1.0.0"}
@@ -214,6 +189,10 @@ def test_database():
             raise HTTPException(status_code=500, detail=f"Error en la consulta: {response.text}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en la conexión: {str(e)}")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":
     import uvicorn
